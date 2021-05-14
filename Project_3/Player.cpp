@@ -91,17 +91,18 @@ pair<int,int> SmartPlayerImpl::determineBestMove(Scaffold& s, int N, int color, 
     vector<pair<int,int>> v_store;
     for(int i = 1; i<s.cols(); i++){
         if(s.makeMove(i, color)){
+//            pair<int,int> colScore = make_pair(i, rating(s,N,init_color));
+            pair<int,int> colScore = determineBestMove(s, N, other(color), !am_i_max);
             int score = rating(s, N, init_color);
-            pair<int,int> colScore = make_pair(i, score);
             //if the game isn't over
-            if(score==0){
-                //switch colors
-                determineBestMove(s, N, other(color), !am_i_max);
-            }
+//            if(score==0){
+//                //switch colors
+////                determineBestMove(s, N, other(color), !am_i_max);
+//            }
             //if the game is over
             if(score!=0){
 //                colScore = make_pair(i, score);
-                v_store.push_back(colScore);
+                v_store.push_back(make_pair(i, score));
             }
             s.undoMove();
         }
