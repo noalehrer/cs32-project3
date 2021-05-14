@@ -9,6 +9,7 @@
 #include "provided.h"
 #include <string>
 #include <iostream>
+#include <utility>
 #include <vector>
 using namespace std;
 
@@ -29,12 +30,10 @@ class SmartPlayerImpl
   public:
     int chooseMove(const Scaffold& s, int N, int color);
 private:
-    int determineBestMove(Scaffold& s, int N, int color, bool am_i_max);
+    pair<int,int> determineBestMove(Scaffold& s, int N, int color, bool am_i_max);
+    int chooseMoveHelper(Scaffold& s, int N, int color, bool am_i_max);
     bool am_i_max = true;
-//    pair<int,int> last_colScore = make_pair(0, 0);
-    pair<int,int> best;
-
-    vector<pair<int,int>> colScore_v;
+    int init_color;
     
 };
 
@@ -81,74 +80,79 @@ int BadPlayerImpl::chooseMove(const Scaffold& s, int N, int color)
     return 0;  //  no move was possible
 }
 
-int SmartPlayerImpl::determineBestMove(Scaffold& s, int N, int color, bool am_i_max){
+int other(int color){
+    if(color == RED){
+        return BLACK;
+    }
+    return RED;
+}
+
+pair<int,int> SmartPlayerImpl::determineBestMove(Scaffold& s, int N, int color, bool am_i_max){
+    vector<pair<int,int>> v_store;
     for(int i = 1; i<s.cols(); i++){
         if(s.makeMove(i, color)){
-            int score = rating(s, N, color);
-            pair<int,int> colScore;
-            
+            int score = rating(s, N, init_color);
+            pair<int,int> colScore = make_pair(i, score);
             //if the game isn't over
             if(score==0){
                 //switch colors
-                //wait do i actually need to switch colors...
-                determineBestMove(s, N, color, !am_i_max);
+                determineBestMove(s, N, other(color), !am_i_max);
             }
+            //if the game is over
             if(score!=0){
-                colScore = make_pair(i, score);
-                colScore_v.push_back(colScore);
+//                colScore = make_pair(i, score);
+                v_store.push_back(colScore);
             }
-            
             s.undoMove();
         }
     }
-        //FIRST IS THE COL, SECOND IS THE SCORE
-        
-        if(am_i_max==true && !colScore_v.empty()){
-            //return the max
-            best = colScore_v[0];
-            for(int i = 0; i<colScore_v.size(); i++){
-                if(best.second<colScore_v[i].second){
-                    best.second = colScore_v[i].second;
-                    best.first = colScore_v[i].first;
+    //FIRST IS THE COL, SECOND IS THE SCORE
+//    pair<int,int> best;
+    int bestMove;
+    int bestScore;
+
+    if(am_i_max==true){
+        //return the max
+        if(!v_store.empty()){
+            bestMove = v_store[0].first;
+            bestScore = v_store[0].second;
+            for(int i = 0; i<v_store.size(); i++){
+                if(bestScore<v_store[i].second){
+                    bestScore = v_store[i].second;
+                    bestMove = v_store[i].first;
                 }
             }
         }
-        if(am_i_max==false&& !colScore_v.empty()){
-            //return the min
-            best = colScore_v[0];
-            for(int i = 0; i<colScore_v.size(); i++){
-                if(best.second>colScore_v[i].second){
-                    best.second = colScore_v[i].second;
-                    best.first = colScore_v[i].first;
+    }
+    
+    if(am_i_max==false){
+        //return the min
+        if(!v_store.empty()){
+            bestMove = v_store[0].first;
+            bestScore = v_store[0].second;
+            for(int i = 0; i<v_store.size(); i++){
+                if(bestScore>v_store[i].second){
+                    bestScore = v_store[i].second;
+                    bestMove = v_store[i].first;
                 }
             }
         }
-        
-//        //HOW AND WHEN DO I COMPARE THE SCORES
-//        if(am_i_max==true){
-//            //return the max
-//            if(colScore.second > last_colScore.second){
-//                last_colScore.first = colScore.first;
-//                last_colScore.second = colScore.second;
-//            }
-//        }
-//        if(am_i_max==false){
-//            //return the min
-//            if(colScore.second < last_colScore.second){
-//                last_colScore.first = colScore.first;
-//                last_colScore.second = colScore.second;
-//            }
-//        }
-    return best.first;
+    }
+    
+    return make_pair(bestMove, bestScore);
 }
    
+int SmartPlayerImpl::chooseMoveHelper(Scaffold& s, int N, int color, bool am_i_max){
+    return determineBestMove(s, N, color, am_i_max).first;
+}
 
 int SmartPlayerImpl::chooseMove(const Scaffold& s, int N, int color)
 {
     //need to make a copy of the scaffold for it to remain const
     Scaffold copy = s;
     am_i_max = true;
-    int move = determineBestMove(copy, N, color, am_i_max);
+    init_color = color;
+    int move = chooseMoveHelper(copy, N, color, am_i_max);
     //it skips the comp's turn bc it keeps saying that col 2 is the best move,,, maybe i should make a stack
     return move;
 }
