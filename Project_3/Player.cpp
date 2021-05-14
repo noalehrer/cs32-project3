@@ -9,7 +9,7 @@
 #include "provided.h"
 #include <string>
 #include <iostream>
-#include <stack>
+#include <vector>
 using namespace std;
 
 class HumanPlayerImpl
@@ -29,16 +29,13 @@ class SmartPlayerImpl
   public:
     int chooseMove(const Scaffold& s, int N, int color);
 private:
-    int determineBestMove(Scaffold& s, int N, int color);
-    int top_move(int color);
+    int determineBestMove(Scaffold& s, int N, int color, bool am_i_max);
+    bool am_i_max = true;
+//    pair<int,int> last_colScore = make_pair(0, 0);
+    pair<int,int> best;
 
-    int best_score_red = 0;
-    int best_score_black = 0;
+    vector<pair<int,int>> colScore_v;
     
-    int top_move_red = 0;
-    int top_move_black = 0;
-
-    int comp_color = 0;
 };
 
 int HumanPlayerImpl::chooseMove(const Scaffold& s, int N, int color)
@@ -71,8 +68,6 @@ int BadPlayerImpl::chooseMove(const Scaffold& s, int N, int color)
     int columns = s.cols();
     int levels = s.levels();
     
-    
-    
     //starting at "human" column 1 (the leftmost column)
     for(int i = 1; i<=columns; i++){
         //starting at "human" level 1 (the bottom level)
@@ -86,98 +81,76 @@ int BadPlayerImpl::chooseMove(const Scaffold& s, int N, int color)
     return 0;  //  no move was possible
 }
 
-int SmartPlayerImpl::determineBestMove(Scaffold& s, int N, int color){
-    //need to iterate thru all possible moves, maybe a for loop for each column?
-    //or a while loop
-    //my make move function will return true if a move was able to be made...
-    //maybe i could have a private variable in smartplayer impl to store the rating and best move so far...
-    for(int i = 1; i<=s.cols(); i++){
-        //if you are able to make the move (ex: col is not full...)
+int SmartPlayerImpl::determineBestMove(Scaffold& s, int N, int color, bool am_i_max){
+    for(int i = 1; i<s.cols(); i++){
         if(s.makeMove(i, color)){
             int score = rating(s, N, color);
+            pair<int,int> colScore;
+            
             //if the game isn't over
             if(score==0){
-                //call determineBestMove for the OTHER player... aka switch colors
-                if(color == RED){
-                    top_move_red = i;
-                    color = BLACK;
-                }
-                else if(color==BLACK){
-                    top_move_black = i;
-                    color = RED;
-                }
-                determineBestMove(s, N, color);
+                //switch colors
+                //wait do i actually need to switch colors...
+                determineBestMove(s, N, color, !am_i_max);
             }
-            //we only want to remember the score if it caused a win or a tie.. aka greater than 0
-            if(score>0){
-                //might need a diff best_score and best_move for the two diff players...
-                if(color==RED){
-                    if(best_score_red<score){
-                        best_score_red = score;
-                        top_move_red = s.undoMove();
-                    }
-                }
-                else if(color==BLACK){
-                    if(best_score_black<score){
-                        best_score_black = score;
-                        top_move_black = s.undoMove();
-                    }
+            if(score!=0){
+                colScore = make_pair(i, score);
+                colScore_v.push_back(colScore);
+            }
+            
+            s.undoMove();
+        }
+    }
+        //FIRST IS THE COL, SECOND IS THE SCORE
+        
+        if(am_i_max==true && !colScore_v.empty()){
+            //return the max
+            best = colScore_v[0];
+            for(int i = 0; i<colScore_v.size(); i++){
+                if(best.second<colScore_v[i].second){
+                    best.second = colScore_v[i].second;
+                    best.first = colScore_v[i].first;
                 }
             }
         }
-    }
-    return top_move(color);
+        if(am_i_max==false&& !colScore_v.empty()){
+            //return the min
+            best = colScore_v[0];
+            for(int i = 0; i<colScore_v.size(); i++){
+                if(best.second>colScore_v[i].second){
+                    best.second = colScore_v[i].second;
+                    best.first = colScore_v[i].first;
+                }
+            }
+        }
+        
+//        //HOW AND WHEN DO I COMPARE THE SCORES
+//        if(am_i_max==true){
+//            //return the max
+//            if(colScore.second > last_colScore.second){
+//                last_colScore.first = colScore.first;
+//                last_colScore.second = colScore.second;
+//            }
+//        }
+//        if(am_i_max==false){
+//            //return the min
+//            if(colScore.second < last_colScore.second){
+//                last_colScore.first = colScore.first;
+//                last_colScore.second = colScore.second;
+//            }
+//        }
+    return best.first;
 }
-
-int SmartPlayerImpl::top_move(int color){
-    if(color==BLACK){
-        return top_move_black;
-    }
-    if(color==RED){
-        return top_move_red;
-    }
-    cerr<<"something went wrong in best_move"<<endl;
-    return 0;
-}
+   
 
 int SmartPlayerImpl::chooseMove(const Scaffold& s, int N, int color)
 {
     //need to make a copy of the scaffold for it to remain const
     Scaffold copy = s;
-    comp_color = color;
-    int move = determineBestMove(copy, N, color);
+    am_i_max = true;
+    int move = determineBestMove(copy, N, color, am_i_max);
     //it skips the comp's turn bc it keeps saying that col 2 is the best move,,, maybe i should make a stack
     return move;
-    //functions that i have to work with        parameters needed
-    //=============================================================================
-    //rating                                    Scaffold& s, int N, int color
-        //returns 0 if the game is not yet over!!!
-    //game_over                                 const Scaffold& s, int n_in_a_row
-        //returns 99 if game is not over
-        //if game is over, returns game outcome
-            //RED win, BLACK win, or TIE_GAME
-    
-        
-    //determineBestMove()                   int color (to see what best move for that color is)
-    //                                      Scaffold& s (to eventually call game_over and rating, also to make hypothetical moves)
-    //                                      int n_in_a_row (rating and game_over both need this info)
-
-    //when would i compare rating... in choose move, in determine best move, or in a diff helper fxn????
-    //this function is supposed to return TWO NUMBERS: one int to indicate col of best move, one int for the rating
-    
-    //pseudocode
-    //when it is smart players's turn to move (when choose move has been called)
-    //determine best move will iterate thru all possible moves that the smart player can make
-    //for each "possible" move (ex: col is not full, game is not over)
-        //make the move, updating scaffold appropriately
-        //use rating function to rate the resulting scaffold
-            //if rating function indicates that the computer won, or there was a tie, REMBMER THE RESULT OF THE MOVE/STORE IN A COLLECTION FOR LATER
-            //otherwise, call determine best move for the other player, and get its return value, and record the result of the best move function
-        //undo the trial move
-    
-    //determine best move will choose the best move (the one that ended in the best rating)
-    //return col of move that should be made, and its ratingrating
-    return 0;
 }
 
 //******************** Player derived class functions *************************
