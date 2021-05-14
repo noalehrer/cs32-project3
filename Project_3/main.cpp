@@ -12,9 +12,11 @@ using namespace std;
 
 int main(){
     HumanPlayer noa("Noa");
-//    SmartPlayer shanthi("Shanthi");
-    BadPlayer molly("Molly");
-    Game g1(4, 3, 3, &noa, &molly);
+    SmartPlayer shanthi("Shanthi");
+//    BadPlayer molly("Molly");
+//    Game g1(4, 3, 3, &noa, &shanthi);
+    Game g1(3, 2, 2, &noa, &shanthi);
+
     cout<<endl;
     g1.play();
 }

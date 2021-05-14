@@ -30,19 +30,13 @@ class SmartPlayerImpl
     int chooseMove(const Scaffold& s, int N, int color);
 private:
     int determineBestMove(Scaffold& s, int N, int color);
-    int best_move(int color);
+    int top_move(int color);
 
     int best_score_red = 0;
     int best_score_black = 0;
-
-    int best_move_red = 0;
-    int best_move_black = 0;
     
-    stack<int> red_move_stack;
-    stack<int> black_move_stack;
-    
-    stack<int> best_red_move_stack;
-    stack<int> best_black_move_stack;
+    int top_move_red = 0;
+    int top_move_black = 0;
 
     int comp_color = 0;
 };
@@ -97,23 +91,19 @@ int SmartPlayerImpl::determineBestMove(Scaffold& s, int N, int color){
     //or a while loop
     //my make move function will return true if a move was able to be made...
     //maybe i could have a private variable in smartplayer impl to store the rating and best move so far...
-    for(int i = 1; i<s.cols(); i++){
+    for(int i = 1; i<=s.cols(); i++){
         //if you are able to make the move (ex: col is not full...)
         if(s.makeMove(i, color)){
-            if(color==RED){
-                red_move_stack.push(i);
-            }
-            if(color==BLACK){
-                black_move_stack.push(i);
-            }
             int score = rating(s, N, color);
             //if the game isn't over
             if(score==0){
                 //call determineBestMove for the OTHER player... aka switch colors
                 if(color == RED){
+                    top_move_red = i;
                     color = BLACK;
                 }
                 else if(color==BLACK){
+                    top_move_black = i;
                     color = RED;
                 }
                 determineBestMove(s, N, color);
@@ -124,46 +114,27 @@ int SmartPlayerImpl::determineBestMove(Scaffold& s, int N, int color){
                 if(color==RED){
                     if(best_score_red<score){
                         best_score_red = score;
-                        best_move_red = i;
-                        //clear the best move stack
-                        while(!best_red_move_stack.empty()){
-                            best_red_move_stack.pop();
-                        }
-                        //populate best red move stack with current red move stack, bc it is currently the best
-                        while(!red_move_stack.empty()){
-                            best_red_move_stack.push(red_move_stack.top());
-                            red_move_stack.pop();
-                        }
+                        top_move_red = s.undoMove();
                     }
                 }
                 else if(color==BLACK){
                     if(best_score_black<score){
                         best_score_black = score;
-                        best_move_black = i;
-                    }
-                    //clear the best move stack
-                    while(!best_black_move_stack.empty()){
-                        best_black_move_stack.pop();
-                    }
-                    //populate best red move stack with current red move stack, bc it is currently the best
-                    while(!black_move_stack.empty()){
-                        best_black_move_stack.push(black_move_stack.top());
-                        black_move_stack.pop();
+                        top_move_black = s.undoMove();
                     }
                 }
             }
-            s.undoMove();
         }
     }
-    return best_move(color);
+    return top_move(color);
 }
 
-int SmartPlayerImpl::best_move(int color){
+int SmartPlayerImpl::top_move(int color){
     if(color==BLACK){
-        return best_black_move_stack.top();
+        return top_move_black;
     }
     if(color==RED){
-        return best_red_move_stack.top();
+        return top_move_red;
     }
     cerr<<"something went wrong in best_move"<<endl;
     return 0;
