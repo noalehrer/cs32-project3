@@ -88,59 +88,67 @@ int other(int color){
 }
 
 pair<int,int> SmartPlayerImpl::determineBestMove(Scaffold& s, int N, int color, bool am_i_max){
-    vector<pair<int,int>> v_store;
+  //collection to store all the outcomes on one level of a branch
+    vector<pair<int,int>> collection;
+    //for each possible move
     for(int i = 1; i<s.cols(); i++){
+        //if you can make the move
         if(s.makeMove(i, color)){
-//            pair<int,int> colScore = make_pair(i, rating(s,N,init_color));
-            pair<int,int> colScore = determineBestMove(s, N, other(color), !am_i_max);
-            int score = rating(s, N, init_color);
-            //if the game isn't over
-//            if(score==0){
-//                //switch colors
-////                determineBestMove(s, N, other(color), !am_i_max);
+//            if(color==init_color){
+//                cerr<<"comp";
 //            }
-            //if the game is over
+//            if(color!=init_color){
+//                cerr<<"human";
+//            }
+//            cerr<<" would go here: "<<i<<endl;
+//            s.display();
+            //rate the move
+            //color or init color...
+            int score = rating(s, N, init_color);
+            pair<int,int> colScore = make_pair(i, score);
+            //if the game is still in progress
+            if(score==0){
+                //recursive call to determine best move of other player
+                determineBestMove(s, N, other(color), !am_i_max);
+            }
             if(score!=0){
-//                colScore = make_pair(i, score);
-                v_store.push_back(make_pair(i, score));
+//                cerr<<"game over"<<endl;
+//                cerr<<"rating: "<<score<<endl;
+//                if(score<0){
+//                    cerr<<"comp lost"<<endl;
+//                }
+//                if(score>0){
+//                    cerr<<"comp won or it was a tie"<<endl;
+//                }
+                collection.push_back(colScore);
             }
             s.undoMove();
         }
     }
-    //FIRST IS THE COL, SECOND IS THE SCORE
-//    pair<int,int> best;
-    int bestMove;
-    int bestScore;
-
-    if(am_i_max==true){
-        //return the max
-        if(!v_store.empty()){
-            bestMove = v_store[0].first;
-            bestScore = v_store[0].second;
-            for(int i = 0; i<v_store.size(); i++){
-                if(bestScore<v_store[i].second){
-                    bestScore = v_store[i].second;
-                    bestMove = v_store[i].first;
+    pair<int,int> best;
+    //pick the best turn
+    if(!collection.empty()){
+        best = collection[0];
+        if(am_i_max){
+            //take the max
+            for(int i = 1; i<collection.size(); i++){
+                if(collection[i].second>best.second){
+                    best = collection[i];
                 }
             }
+            
         }
-    }
-    
-    if(am_i_max==false){
-        //return the min
-        if(!v_store.empty()){
-            bestMove = v_store[0].first;
-            bestScore = v_store[0].second;
-            for(int i = 0; i<v_store.size(); i++){
-                if(bestScore>v_store[i].second){
-                    bestScore = v_store[i].second;
-                    bestMove = v_store[i].first;
+        if(!am_i_max){
+            //take the min
+            for(int i = 1; i<collection.size(); i++){
+                if(collection[i].second<best.second){
+                    best = collection[i];
                 }
             }
+            
         }
     }
-    
-    return make_pair(bestMove, bestScore);
+    return best;
 }
    
 int SmartPlayerImpl::chooseMoveHelper(Scaffold& s, int N, int color, bool am_i_max){

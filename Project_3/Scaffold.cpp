@@ -233,7 +233,7 @@ int ScaffoldImpl::lowest_freeLevel(int column)const{
 bool ScaffoldImpl::makeMove(int column, int color)
 {
     if(!column_isValid(column)){
-        cerr<<"Invalid column"<<endl;
+        cerr<<column<<" is an invalid column"<<endl;
         return false;
     }
     
