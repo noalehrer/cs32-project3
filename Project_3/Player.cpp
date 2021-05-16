@@ -88,64 +88,55 @@ int other(int color){
 }
 
 pair<int,int> SmartPlayerImpl::determineBestMove(Scaffold& s, int N, int color, bool am_i_max){
-  //collection to store all the outcomes on one level of a branch
-    vector<pair<int,int>> collection;
+    //MAKE IT ACTUALLY RECURSIVE... THINK THRU BASE CASES AND STUFF
+    vector<pair<int,int>> collection; //store all the outcomes on one level of a branch
     //for each possible move
     for(int i = 1; i<s.cols(); i++){
         //if you can make the move
+//        int score = rating(s, N, init_color);
+//        pair<int,int> colScore = make_pair(i, score);
+//        if(score!=0){
+//            //there's an issue with how the collection is being populated... right now it only gets one pair put in???
+//            collection.push_back(colScore);
+//        }
         if(s.makeMove(i, color)){
-//            if(color==init_color){
-//                cerr<<"comp";
-//            }
-//            if(color!=init_color){
-//                cerr<<"human";
-//            }
-//            cerr<<" would go here: "<<i<<endl;
-//            s.display();
-            //rate the move
-            //color or init color...
-            int score = rating(s, N, init_color);
-            pair<int,int> colScore = make_pair(i, score);
+            //rating should always be in terms of init_color (comp's color)
+//            int score = rating(s, N, init_color);
+//            pair<int,int> colScore = make_pair(i, score);
             //if the game is still in progress
             if(score==0){
-                //recursive call to determine best move of other player
-                determineBestMove(s, N, other(color), !am_i_max);
+                colScore = determineBestMove(s, N, other(color), !am_i_max); //recursive call to determine best move of other player
             }
             if(score!=0){
-//                cerr<<"game over"<<endl;
-//                cerr<<"rating: "<<score<<endl;
-//                if(score<0){
-//                    cerr<<"comp lost"<<endl;
-//                }
-//                if(score>0){
-//                    cerr<<"comp won or it was a tie"<<endl;
-//                }
+                //there's an issue with how the collection is being populated... right now it only gets one pair put in???
                 collection.push_back(colScore);
             }
             s.undoMove();
         }
     }
+    int score = rating(s, N, init_color);
+    pair<int,int> colScore = make_pair(i, score);
+    if(score!=0){
+        //there's an issue with how the collection is being populated... right now it only gets one pair put in???
+        collection.push_back(colScore);
+    }
     pair<int,int> best;
-    //pick the best turn
+    //pick best turn from collection
     if(!collection.empty()){
         best = collection[0];
         if(am_i_max){
-            //take the max
-            for(int i = 1; i<collection.size(); i++){
+            for(int i = 0; i<collection.size(); i++){
                 if(collection[i].second>best.second){
                     best = collection[i];
                 }
             }
-            
         }
         if(!am_i_max){
-            //take the min
-            for(int i = 1; i<collection.size(); i++){
+            for(int i = 0; i<collection.size(); i++){
                 if(collection[i].second<best.second){
                     best = collection[i];
                 }
             }
-            
         }
     }
     return best;
