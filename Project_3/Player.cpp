@@ -30,8 +30,9 @@ class SmartPlayerImpl
   public:
     int chooseMove(const Scaffold& s, int N, int color);
 private:
-//    int minimax(Scaffold& s, int N, int color, int turn_count);
-    pair<int,int> minimax(Scaffold& s, int N, int color, int turn_count, bool am_i_max);
+    pair<int,int> minimax(Scaffold& s, int N, int color, int turn_count);
+//    pair<int,int> minimax(Scaffold& s, int N, int color, int turn_count, bool am_i_max);
+//    pair<int,int> minimax(Scaffold& s, int N, int color, vector<int,int> collection);
 
     
     pair<int,int> determineBestMove(Scaffold& s, int N, int color, int turn_count);
@@ -91,109 +92,128 @@ int other(int color){
     return RED;
 }
 //
-//int SmartPlayerImpl::minimax(Scaffold& s, int N, int color, int turn_count){
-//    //hmmm collection only ever has 1 score in it
-////    vector<int> collection;
-//    //base case
-//    //what about when turn count is zero
-//    if(rating(s, N, init_color)!=0){
-////        collection.push_back(rating(s, N, init_color));
+pair<int,int> SmartPlayerImpl::minimax(Scaffold& s, int N, int color, int turn_count){
+    //hmmm collection only ever has 1 score in it
+    vector<pair<int,int>> collection;
+    //base case
+    //if the game is over
+    if(rating(s, N, init_color)!=0){
+        int column = s.undoMove();
+        s.makeMove(column, color);
+        collection.push_back(make_pair(column,rating(s, N, init_color)));
 //        cout<<rating(s, N, init_color)<<endl;
-//        return rating(s, N, init_color);
-//    }
-//    //max
-//    if(turn_count%2==0){
-//        int bestScore = -INFINITY;
-//        for(int i = 1; i<s.cols(); i++){
-//            //if you can make the move, and the game is still not over
-//            if(s.makeMove(i, color) && (rating(s, N, init_color)==0)){
-//                int score = minimax(s, N, other(color), turn_count + 1);
-//                if(bestScore<score){
-//                    bestScore = score;
-//                }
-//                s.undoMove();
-//            }
-//        }
-//        cout<<"best (max): "<<bestScore<<endl;
-//        return bestScore;
-//    }
-//    //min
-//    else{
-//        int bestScore = INFINITY;
-//        for(int i = 1; i<s.cols();i++){
-//            if(s.makeMove(i, color)){
-//                int score = minimax(s, N, other(color), turn_count + 1);
-//                if(bestScore>score){
-//                    bestScore = score;
-//                }
-//                s.undoMove();
-//            }
-//        }
-//        cout<<"best (min): "<<bestScore<<endl;
-//        return bestScore;
-//    }
-//}
-
-pair<int,int> SmartPlayerImpl::minimax(Scaffold& s, int N, int color, int turn_count, bool am_i_max){
-    int score = rating(s, N, init_color);
-    //terminal state
-    if(score!=0){
-        return make_pair(s.undoMove(), score);
     }
-    //maximizing player
-    if(am_i_max==true){
+    //max
+    if(turn_count%2==0){
         int bestScore = -INFINITY;
         int bestMove;
         for(int i = 1; i<s.cols(); i++){
-            if(s.makeMove(i, color)){
-                pair<int,int> colScore = minimax(s, N, other(color), turn_count + 1, false);
-//                s.undoMove();
-                if(colScore.second>bestScore){
-                    bestScore = score;
-                    bestMove = i;
-                }
+            //if you can make the move, and the game is still not over
+            if(s.makeMove(i, color) && (rating(s, N, init_color)==0)){
+                pair<int,int> colScore = minimax(s, N, other(color), turn_count + 1);
+    
+                s.undoMove();
+            }
+        }
+        for(int i = 0; i<collection.size(); i++){
+            if(bestScore<collection[i].second){
+                bestScore = collection[i].second;
+                bestMove = collection[i].first;
             }
         }
         return make_pair(bestMove, bestScore);
     }
-    
     //min
     else{
         int bestScore = -INFINITY;
         int bestMove;
         for(int i = 1; i<s.cols(); i++){
-            if(s.makeMove(i, color)){
-                pair<int,int> colScore = minimax(s, N, other(color), turn_count + 1, true);
-//                s.undoMove();
-                if(colScore.second<bestScore){
-                    bestScore = colScore.second;
-                    bestMove = i;
-                }
+            //if you can make the move, and the game is still not over
+            if(s.makeMove(i, color) && (rating(s, N, init_color)==0)){
+                pair<int,int> colScore = minimax(s, N, other(color), turn_count + 1);
+                s.undoMove();
+            }
+        }
+        for(int i = 0; i<collection.size(); i++){
+            if(bestScore>collection[i].second){
+                bestScore = collection[i].second;
+                bestMove = collection[i].first;
             }
         }
         return make_pair(bestMove, bestScore);
     }
 }
 
+//pair<int,int> SmartPlayerImpl::minimax(Scaffold& s, int N, int color, vector<int,int> collection){
+//    int score = rating(s, N, init_color);
+//    //terminal state
+//    if(score!=0){
+//        return make_pair(s.undoMove(), score);
+//    }
+//    //maximizing player
+//    if(am_i_max==true){
+//        int bestScore = -INFINITY;
+//        int bestMove;
+//        for(int i = 1; i<s.cols(); i++){
+//            if(s.makeMove(i, color)){
+//                pair<int,int> colScore = minimax(s, N, other(color), collection);
+////                s.undoMove();
+//                if(colScore.second>bestScore){
+//                    bestScore = score;
+//                    bestMove = i;
+//                }
+//            }
+//        }
+//        return make_pair(bestMove, bestScore);
+//    }
+//
+//    //min
+//    else{
+//        int bestScore = -INFINITY;
+//        int bestMove;
+//        for(int i = 1; i<s.cols(); i++){
+//            if(s.makeMove(i, color)){
+//                pair<int,int> colScore = minimax(s, N, other(color), collection);
+////                s.undoMove();
+//                if(colScore.second<bestScore){
+//                    bestScore = colScore.second;
+//                    bestMove = i;
+//                }
+//            }
+//        }
+//        return make_pair(bestMove, bestScore);
+//    }
+//}
 
+//pair<int,int> SmartPlayerImpl::determineBestMove(Scaffold& s, int N, int color, int turn_count){
+//    //ideas: have a useful return type, instead of am_i_max being true or false, make a turn count tracker to keep track of the depth, and then if the turn count is even then you are max, for example
+//    vector<int,int> collection;
+//    pair<int,int> colScore;
+//    for(int i = 1; i<s.cols();i++){
+//        if(s.makeMove(i, color)){
+//            colScore = minimax(s, N, other(color), collection);
+//            s.undoMove();
+//        }
+//    }
+//    return colScore;
+//}
+   
 pair<int,int> SmartPlayerImpl::determineBestMove(Scaffold& s, int N, int color, int turn_count){
     //ideas: have a useful return type, instead of am_i_max being true or false, make a turn count tracker to keep track of the depth, and then if the turn count is even then you are max, for example
-    int bestScore = -INFINITY;
-    int bestMove;
-    for(int i = 1; i<s.cols();i++){
-        if(s.makeMove(i, color)){
-            pair<int,int> colScore = minimax(s, N, other(color), turn_count+1, false);
-            s.undoMove();
-            if(colScore.second>bestScore){
-                bestScore = colScore.second;
-                bestMove = i;
-            }
-        }
-    }
-    return make_pair(bestMove, bestScore);
+//    int bestScore = -INFINITY;
+//    int bestMove;
+//    for(int i = 1; i<s.cols();i++){
+//        if(s.makeMove(i, color)){
+//            pair<int,int> colScore = minimax(s, N, other(color), turn_count+1);
+//            s.undoMove();
+//            if(colScore.second>bestScore){
+//                bestScore = colScore.second;
+//                bestMove = i;
+//            }
+//        }
+//    }
+    return minimax(s, N, color, turn_count);
 }
-   
-
 int SmartPlayerImpl::chooseMove(const Scaffold& s, int N, int color)
 {
     //need to make a copy of the scaffold for it to remain const
