@@ -13,6 +13,7 @@
 using namespace std;
 
 const int BIG_NUMBER = 50;
+const int INFINITY = 1000;
 
 class Scaffold;
 

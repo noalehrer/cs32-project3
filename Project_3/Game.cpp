@@ -26,134 +26,14 @@ private:
     Player* my_turn;
     int turn_count = 0;
     int winner = 999;
-    
-    //member functions
-    
-    bool up_right_diag_win(int col, int level, int color)const;
-    int up_right_diag_helper(int col, int level, int color, int count, int max_count)const;
-    
-    bool down_right_diag_win(int col, int level, int color)const;
-    int down_right_diag_helper(int col, int level, int color, int count, int max_count)const;
 
 };
 
 GameImpl::GameImpl(int nColumns, int nLevels, int N, Player* red, Player* black):s(nColumns, nLevels), m_N(N), first(red), second(black), my_turn(first)
 {
+    //make sure N for connect_N makes sense
     
 }
-
-int GameImpl::down_right_diag_helper(int col, int level, int color, int count, int max_count)const{
-    //base case
-    //out of bounds
-    if(level<1){
-        return max_count;
-    }
-    
-    if(col>s.cols()){
-        return max_count;
-    }
-    //looking for a streak of the same color
-    if(checkerAt(col, level)==color){
-        count++;
-        if(count>max_count){
-            max_count = count; //update with the longest current streak
-        }
-    }
-    else if(checkerAt(col, level)!=color){
-        count = 0; //streak interrupted, reset count
-    }
-    
-    max_count = down_right_diag_helper(col+1, level-1, color, count, max_count);
-    return max_count;
-}
-
-bool GameImpl::down_right_diag_win(int col, int level, int color)const{
-    int count = 0, max_count = 0;
-    
-    //base case
-    //start at upper-right corner: proceed left, then down to level 1
-    //out of bounds to the left
-    if(col<1){
-        return false;
-    }
-    if(level<1){
-        return false;
-    }
-    //if the diag streak from that spot wasn't long enough, move one to the left
-    if(down_right_diag_helper(col, level, color, count, max_count)<m_N){
-        //if in bounds
-        if(col>1){
-            //proceed left
-            return down_right_diag_win(col-1, level, color);
-        }
-        //then proceed down
-        return down_right_diag_win(col, level-1, color);
-    }
-    return true;
-}
-
-
-int GameImpl::up_right_diag_helper(int col, int level, int color, int count, int max_count)const{
-    //this can prob be optimized...
-    
-    //base case
-    //out of bounds
-    if(level>s.levels()){
-        return max_count;
-    }
-    
-    if(col>s.cols()){
-        return max_count;
-    }
-    
-    //looking for a streak of the same color
-    if(checkerAt(col, level)==color){
-        count++;
-        if(count>max_count){
-            max_count = count; //update with the longest current streak
-        }
-    }
-    else if(checkerAt(col, level)!=color){
-        count = 0; //streak interrupted, set count back to 0
-    }
-    
-    max_count = up_right_diag_helper(col+1, level+1, color, count, max_count);
-    
-    return max_count;
-    
-}
-
-bool GameImpl::up_right_diag_win(int col, int level, int color)const{
-    
-    int count = 0, max_count = 0;
-
-    //base case
-    //starting at upper-left corner: proceed down to level 1, then to the right
-    
-    //out of bounds to the right
-    if(col>s.cols()){
-        return false;
-    }
-    
-    //if the diag streak from that spot wasn't long enough, move one to the right
-    if(up_right_diag_helper(col, level, color, count, max_count)<m_N){
-        if(level>1){
-            return up_right_diag_win(col, level-1, color);
-
-        }
-        return up_right_diag_win(col+1, level, color);
-    }
-    
-    //if the streak was long enough, then got m_N in a row across for a win
-    if(up_right_diag_helper(col, level, color, count, max_count)>=m_N){
-        return true;
-    }
-    
-    cerr<<"shouldn't get to here, uh oh"<<endl;
-    
-    return true;
-}
-
 
 bool GameImpl::completed(int& winner) const
 {
