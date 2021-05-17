@@ -32,8 +32,9 @@ class SmartPlayerImpl
 private:
     
     pair<int,int> determineBestMove(Scaffold& s, int N, int color, bool am_i_max, int turn_count);
-//    bool am_i_max = true;
-    int init_color;
+    int chooseMoveHelper(Scaffold& s, int N, int color, bool am_i_max);
+        bool am_i_max = true;
+        int init_color;
 //    pair<int,int> minimax(Scaffold& s, int N, int color, int turn_count);
 ////    pair<int,int> minimax(Scaffold& s, int N, int color, int turn_count, bool am_i_max);
 ////    pair<int,int> minimax(Scaffold& s, int N, int color, vector<int,int> collection);
@@ -96,48 +97,82 @@ int other(int color){
     return RED;
 }
 pair<int,int> SmartPlayerImpl::determineBestMove(Scaffold& s, int N, int color, bool am_i_max, int turn_count){
+    
+    //it plays well when it gets to go first
+    //it doesn't always play well when it goes second
     vector<pair<int,int>> collection;
     pair<int,int> best;
+    //terminal node????
 
     for(int i = 1; i<=s.cols(); i++){
-        if(s.makeMove(i, color)){
-            int score = rating(s, N, init_color);
-            if(score==0){
-                return determineBestMove(s, N, other(color), !am_i_max, turn_count+1);
+        //        s.display();
+//        cout<<i<<endl;
+//        if(rating(s, N, init_color)==0){
+            if(s.makeMove(i, color)){
+//                cout<<i<<endl;
+//                s.display();
+                int score = rating(s, N, init_color);
+                //if the game isn't over
+//                pair<int,int> colScore;
+                if(score==0){
+                    //switch colors
+                    best = determineBestMove(s, N, other(color), !am_i_max, turn_count+1);
+//                    best = colScore;
+//                    collection.push_back(best);
+                    
+//                    return colScore;
+                }
+//                score = rating(s, N, init_color);
+                if(score!=0){
+//                    best = colScore;
+                    best = make_pair(i,rating(s,N,init_color));
+                    collection.push_back(best);
+                }
+                //i think i'm undoing too much...
+                s.undoMove();
             }
-            score = rating(s, N, init_color);
-            if(score!=0){
-                best = make_pair(i,rating(s,N,init_color));
-                collection.push_back(best);
-            }
-            s.undoMove();
-        }
+//        }
+//        s.display();
+        //        collection.push_back(make_pair(i,rating(s, N, init_color)));
     }
-    
+//    FIRST IS THE COL, SECOND IS THE SCORE
+//    if(rating(s, N, init_color)!=0){
+//        return best;
+//    }
     if(am_i_max==true){
+        //return the max
         for(int i = 0; i<collection.size(); i++){
             if(best.second<collection[i].second){
                 best = collection[i];
             }
         }
     }
+
     if(am_i_max==false){
+        //return the min
         for(int i = 0; i<collection.size(); i++){
             if(best.second>collection[i].second){
                 best = collection[i];
             }
         }
     }
-    
+    //
     return best;
 }
    
+int SmartPlayerImpl::chooseMoveHelper(Scaffold& s, int N, int color, bool am_i_max){
+    return determineBestMove(s, N, color, am_i_max,0).first;
+}
+
 int SmartPlayerImpl::chooseMove(const Scaffold& s, int N, int color)
 {
+    //need to make a copy of the scaffold for it to remain const
     Scaffold copy = s;
-    bool am_i_max = true;
+    am_i_max = true;
     init_color = color;
     return determineBestMove(copy, N, color, am_i_max,0).first;
+    //it skips the comp's turn bc it keeps saying that col 2 is the best move,,, maybe i should make a stack
+//    return move;
 }
 
 //******************** Player derived class functions *************************

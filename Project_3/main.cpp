@@ -14,10 +14,10 @@ int main(){
     HumanPlayer noa("Noa");
     SmartPlayer shanthi("Shanthi");
     BadPlayer molly("Molly");
-//    Game g1(4, 3, 3, &noa, &shanthi);
+    Game g1(4, 3, 3, &noa, &shanthi);
 //    Game g1(3, 2, 2, &noa, &shanthi);
 //    Game g1(3,2,2, &noa, &shanthi);
-    Game g1(2,2,2, &noa, &shanthi);
+//    Game g1(3,2,3, &noa, &shanthi);
 
     cout<<endl;
     g1.play();
@@ -31,8 +31,8 @@ int main(){
 //void doGameTests()
 //{
 //    BadPlayer bp1("Bart");
-//    BadPlayer bp2("Homer");
-//    Game g(2, 2, 2, &bp1, &bp2);
+//    SmartPlayer sp2("Homer");
+//    Game g(2, 2, 2, &bp1, &sp2);
 //    int winner;
 //    assert(!g.completed(winner));
 //    g.takeTurn();  // Red's first move
