@@ -33,7 +33,7 @@ private:
     
     pair<int,int> determineBestMove(Scaffold& s, int N, int color, bool am_i_max, int turn_count);
     int chooseMoveHelper(Scaffold& s, int N, int color, bool am_i_max);
-        bool am_i_max = true;
+//        bool am_i_max = true;
         int init_color;
 //    pair<int,int> minimax(Scaffold& s, int N, int color, int turn_count);
 ////    pair<int,int> minimax(Scaffold& s, int N, int color, int turn_count, bool am_i_max);
@@ -125,8 +125,11 @@ pair<int,int> SmartPlayerImpl::determineBestMove(Scaffold& s, int N, int color, 
 //                score = rating(s, N, init_color);
                 if(score!=0){
 //                    best = colScore;
-                    best = make_pair(i,rating(s,N,init_color));
-                    collection.push_back(best);
+//                    best = make_pair(i,rating(s,N,init_color));
+//                    collection.push_back(best);
+                    
+                    collection.push_back(make_pair(i,rating(s,N,init_color)));
+
                 }
                 //i think i'm undoing too much...
                 s.undoMove();
@@ -141,18 +144,18 @@ pair<int,int> SmartPlayerImpl::determineBestMove(Scaffold& s, int N, int color, 
 //    }
     if(am_i_max==true){
         //return the max
-        for(int i = 0; i<collection.size(); i++){
-            if(best.second<collection[i].second){
-                best = collection[i];
+        for(int k = 0; k<collection.size(); k++){
+            if(best.second<collection[k].second){
+                best = collection[k];
             }
         }
     }
 
     if(am_i_max==false){
         //return the min
-        for(int i = 0; i<collection.size(); i++){
-            if(best.second>collection[i].second){
-                best = collection[i];
+        for(int k = 0; k<collection.size(); k++){
+            if(best.second>collection[k].second){
+                best = collection[k];
             }
         }
     }
@@ -168,7 +171,7 @@ int SmartPlayerImpl::chooseMove(const Scaffold& s, int N, int color)
 {
     //need to make a copy of the scaffold for it to remain const
     Scaffold copy = s;
-    am_i_max = true;
+    bool am_i_max = true;
     init_color = color;
     return determineBestMove(copy, N, color, am_i_max,0).first;
     //it skips the comp's turn bc it keeps saying that col 2 is the best move,,, maybe i should make a stack
