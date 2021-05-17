@@ -30,15 +30,19 @@ class SmartPlayerImpl
   public:
     int chooseMove(const Scaffold& s, int N, int color);
 private:
-    pair<int,int> minimax(Scaffold& s, int N, int color, int turn_count);
-//    pair<int,int> minimax(Scaffold& s, int N, int color, int turn_count, bool am_i_max);
-//    pair<int,int> minimax(Scaffold& s, int N, int color, vector<int,int> collection);
-
     
-    pair<int,int> determineBestMove(Scaffold& s, int N, int color, int turn_count);
-//    int chooseMoveHelper(Scaffold& s, int N, int color, bool am_i_max);
-    bool am_i_max = true;
+    pair<int,int> determineBestMove(Scaffold& s, int N, int color, bool am_i_max, int turn_count);
+//    bool am_i_max = true;
     int init_color;
+//    pair<int,int> minimax(Scaffold& s, int N, int color, int turn_count);
+////    pair<int,int> minimax(Scaffold& s, int N, int color, int turn_count, bool am_i_max);
+////    pair<int,int> minimax(Scaffold& s, int N, int color, vector<int,int> collection);
+//
+//
+//    pair<int,int> determineBestMove(Scaffold& s, int N, int color, int turn_count);
+////    int chooseMoveHelper(Scaffold& s, int N, int color, bool am_i_max);
+//    bool am_i_max = true;
+//    int init_color;
     
 };
 
@@ -91,138 +95,49 @@ int other(int color){
     }
     return RED;
 }
-//
-pair<int,int> SmartPlayerImpl::minimax(Scaffold& s, int N, int color, int turn_count){
-    //hmmm collection only ever has 1 score in it
+pair<int,int> SmartPlayerImpl::determineBestMove(Scaffold& s, int N, int color, bool am_i_max, int turn_count){
     vector<pair<int,int>> collection;
-    //base case
-    //if the game is over
-    if(rating(s, N, init_color)!=0){
-        int column = s.undoMove();
-        s.makeMove(column, color);
-        collection.push_back(make_pair(column,rating(s, N, init_color)));
-//        cout<<rating(s, N, init_color)<<endl;
+    pair<int,int> best;
+
+    for(int i = 1; i<=s.cols(); i++){
+        if(s.makeMove(i, color)){
+            int score = rating(s, N, init_color);
+            if(score==0){
+                return determineBestMove(s, N, other(color), !am_i_max, turn_count+1);
+            }
+            score = rating(s, N, init_color);
+            if(score!=0){
+                best = make_pair(i,rating(s,N,init_color));
+                collection.push_back(best);
+            }
+            s.undoMove();
+        }
     }
-    //max
-    if(turn_count%2==0){
-        int bestScore = -INFINITY;
-        int bestMove;
-        for(int i = 1; i<s.cols(); i++){
-            //if you can make the move, and the game is still not over
-            if(s.makeMove(i, color) && (rating(s, N, init_color)==0)){
-                pair<int,int> colScore = minimax(s, N, other(color), turn_count + 1);
     
-                s.undoMove();
-            }
-        }
+    if(am_i_max==true){
         for(int i = 0; i<collection.size(); i++){
-            if(bestScore<collection[i].second){
-                bestScore = collection[i].second;
-                bestMove = collection[i].first;
+            if(best.second<collection[i].second){
+                best = collection[i];
             }
         }
-        return make_pair(bestMove, bestScore);
     }
-    //min
-    else{
-        int bestScore = -INFINITY;
-        int bestMove;
-        for(int i = 1; i<s.cols(); i++){
-            //if you can make the move, and the game is still not over
-            if(s.makeMove(i, color) && (rating(s, N, init_color)==0)){
-                pair<int,int> colScore = minimax(s, N, other(color), turn_count + 1);
-                s.undoMove();
-            }
-        }
+    if(am_i_max==false){
         for(int i = 0; i<collection.size(); i++){
-            if(bestScore>collection[i].second){
-                bestScore = collection[i].second;
-                bestMove = collection[i].first;
+            if(best.second>collection[i].second){
+                best = collection[i];
             }
         }
-        return make_pair(bestMove, bestScore);
     }
+    
+    return best;
 }
-
-//pair<int,int> SmartPlayerImpl::minimax(Scaffold& s, int N, int color, vector<int,int> collection){
-//    int score = rating(s, N, init_color);
-//    //terminal state
-//    if(score!=0){
-//        return make_pair(s.undoMove(), score);
-//    }
-//    //maximizing player
-//    if(am_i_max==true){
-//        int bestScore = -INFINITY;
-//        int bestMove;
-//        for(int i = 1; i<s.cols(); i++){
-//            if(s.makeMove(i, color)){
-//                pair<int,int> colScore = minimax(s, N, other(color), collection);
-////                s.undoMove();
-//                if(colScore.second>bestScore){
-//                    bestScore = score;
-//                    bestMove = i;
-//                }
-//            }
-//        }
-//        return make_pair(bestMove, bestScore);
-//    }
-//
-//    //min
-//    else{
-//        int bestScore = -INFINITY;
-//        int bestMove;
-//        for(int i = 1; i<s.cols(); i++){
-//            if(s.makeMove(i, color)){
-//                pair<int,int> colScore = minimax(s, N, other(color), collection);
-////                s.undoMove();
-//                if(colScore.second<bestScore){
-//                    bestScore = colScore.second;
-//                    bestMove = i;
-//                }
-//            }
-//        }
-//        return make_pair(bestMove, bestScore);
-//    }
-//}
-
-//pair<int,int> SmartPlayerImpl::determineBestMove(Scaffold& s, int N, int color, int turn_count){
-//    //ideas: have a useful return type, instead of am_i_max being true or false, make a turn count tracker to keep track of the depth, and then if the turn count is even then you are max, for example
-//    vector<int,int> collection;
-//    pair<int,int> colScore;
-//    for(int i = 1; i<s.cols();i++){
-//        if(s.makeMove(i, color)){
-//            colScore = minimax(s, N, other(color), collection);
-//            s.undoMove();
-//        }
-//    }
-//    return colScore;
-//}
    
-pair<int,int> SmartPlayerImpl::determineBestMove(Scaffold& s, int N, int color, int turn_count){
-    //ideas: have a useful return type, instead of am_i_max being true or false, make a turn count tracker to keep track of the depth, and then if the turn count is even then you are max, for example
-//    int bestScore = -INFINITY;
-//    int bestMove;
-//    for(int i = 1; i<s.cols();i++){
-//        if(s.makeMove(i, color)){
-//            pair<int,int> colScore = minimax(s, N, other(color), turn_count+1);
-//            s.undoMove();
-//            if(colScore.second>bestScore){
-//                bestScore = colScore.second;
-//                bestMove = i;
-//            }
-//        }
-//    }
-    return minimax(s, N, color, turn_count);
-}
 int SmartPlayerImpl::chooseMove(const Scaffold& s, int N, int color)
 {
-    //need to make a copy of the scaffold for it to remain const
     Scaffold copy = s;
-    am_i_max = true;
+    bool am_i_max = true;
     init_color = color;
-    return determineBestMove(copy, N, color, 0).first;
-//    int move = chooseMoveHelper(copy, N, color, am_i_max);
-//    return move;
+    return determineBestMove(copy, N, color, am_i_max,0).first;
 }
 
 //******************** Player derived class functions *************************

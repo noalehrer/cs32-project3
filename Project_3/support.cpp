@@ -7,7 +7,7 @@
 
 #include "support.h"
 
-int rating(Scaffold& s, int N, int color){ //NOTE: ONLY CALL RATING WHEN YOU KNWO THAT THE GAME IS OVER
+int rating(Scaffold& s, int N, int color){
             
     //Example rating table
     //where BIG_NUMBER = 50, for a 4 X 3 scaffold
