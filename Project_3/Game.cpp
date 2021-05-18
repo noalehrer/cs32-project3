@@ -69,6 +69,9 @@ bool GameImpl::takeTurn()
 //        cout<<my_turn->name();
         
         int move = my_turn->chooseMove(s, m_N, color);
+        if(move==-1){
+            return false;
+        }
         s.makeMove(move, color);
 
         turn_count++;

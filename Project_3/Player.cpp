@@ -30,19 +30,9 @@ class SmartPlayerImpl
   public:
     int chooseMove(const Scaffold& s, int N, int color);
 private:
-    
-    pair<int,int> determineBestMove(Scaffold& s, int N, int color, bool am_i_max);
-//        bool am_i_max = true;
-        int init_color;
-//    pair<int,int> minimax(Scaffold& s, int N, int color, int turn_count);
-////    pair<int,int> minimax(Scaffold& s, int N, int color, int turn_count, bool am_i_max);
-////    pair<int,int> minimax(Scaffold& s, int N, int color, vector<int,int> collection);
-//
-//
-//    pair<int,int> determineBestMove(Scaffold& s, int N, int color, int turn_count);
-////    int chooseMoveHelper(Scaffold& s, int N, int color, bool am_i_max);
-//    bool am_i_max = true;
-//    int init_color;
+    int chooseMoveHelper(AlarmClock& ac, const Scaffold& s, int N, int color);
+    pair<int,int> determineBestMove(AlarmClock &ac, Scaffold& s, int N, int color, bool am_i_max);
+    int init_color;
     
 };
 
@@ -95,67 +85,63 @@ int other(int color){
     }
     return RED;
 }
-pair<int,int> SmartPlayerImpl::determineBestMove(Scaffold& s, int N, int color, bool am_i_max){
+pair<int,int> SmartPlayerImpl::determineBestMove(AlarmClock &ac, Scaffold& s, int N, int color, bool am_i_max){
     vector<pair<int,int>> collection;
     pair<int,int> best;
     for(int i = 1; i<=s.cols(); i++){
         if(s.makeMove(i, color)){
-//            s.display();
-            //if the game is still in progress
             if(game_over(s, N)==99){
-                //switch colors
-                                    //current column          //best score from the move further down the tree
-                collection.push_back(make_pair(i, determineBestMove(s, N, other(color), !am_i_max).second));
+                if(ac.timedOut()){
+                    collection.push_back(make_pair(i, rating(s, N, init_color)));
+                }
+                                //column of current move          //best score from the move further down the tree
+                else{
+                    collection.push_back(make_pair(i, determineBestMove(ac, s, N, other(color), !am_i_max).second));
+                }
             }
             if(game_over(s, N)!=99){
-//                cerr<<"game over, outcome available"<<endl;
+                                //column of current move   //rating of outcome
                 collection.push_back(make_pair(i, rating(s, N, init_color)));
-//                best = make_pair(i, rating(s, N, init_color));
-//                collection.push_back(best);
             }
-            //issue with undo?????
             s.undoMove();
         }
     }
     if(am_i_max==true){
-//        cerr<<"I am maximizing"<<endl;
         best = collection[0];
         for(int k = 0; k<collection.size(); k++){
-//            cerr<<collection[k].first<<", "<<collection[k].second<<endl;
             if(best.second<collection[k].second){
                 best = collection[k];
             }
         }
-//        cerr<<"I chose "<<best.first<<", "<<best.second<<endl;
         return best;
     }
     else{
-//        cerr<<"I am minimizing"<<endl;
         best = collection[0];
         for(int k = 0; k<collection.size(); k++){
-//            cerr<<collection[k].first<<", "<<collection[k].second<<endl;
             if(best.second>collection[k].second){
                 best = collection[k];
             }
         }
-//        cerr<<"I chose "<<best.first<<", "<<best.second<<endl;
         return best;
     }
 }
 
 int SmartPlayerImpl::chooseMove(const Scaffold& s, int N, int color)
 {
-    //need to make a copy of the scaffold for it to remain const
-    //if the game is already over...
     if(game_over(s, N)!=99){
         return -1;
     }
+    AlarmClock ac(9900);
+//    AlarmClock ac(9000);
+
+    return chooseMoveHelper(ac, s, N, color);
+}
+
+int SmartPlayerImpl::chooseMoveHelper(AlarmClock &ac, const Scaffold &s, int N, int color){
     Scaffold copy = s;
     bool am_i_max = true;
     init_color = color;
-    return determineBestMove(copy, N, color, am_i_max).first;
-    //it skips the comp's turn bc it keeps saying that col 2 is the best move,,, maybe i should make a stack
-//    return move;
+    return determineBestMove(ac, copy, N, color, am_i_max).first;
 }
 
 //******************** Player derived class functions *************************
