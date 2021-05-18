@@ -128,13 +128,16 @@ pair<int,int> SmartPlayerImpl::determineBestMove(AlarmClock &ac, Scaffold& s, in
 
 int SmartPlayerImpl::chooseMove(const Scaffold& s, int N, int color)
 {
+    AlarmClock timer(10000);
     if(game_over(s, N)!=99){
         return -1;
     }
-    AlarmClock ac(9900);
+    AlarmClock ac(9500);
 //    AlarmClock ac(9000);
 
-    return chooseMoveHelper(ac, s, N, color);
+    int move = chooseMoveHelper(ac, s, N, color);
+    assert(!timer.timedOut());
+    return move;
 }
 
 int SmartPlayerImpl::chooseMoveHelper(AlarmClock &ac, const Scaffold &s, int N, int color){
@@ -142,6 +145,7 @@ int SmartPlayerImpl::chooseMoveHelper(AlarmClock &ac, const Scaffold &s, int N, 
     bool am_i_max = true;
     init_color = color;
     return determineBestMove(ac, copy, N, color, am_i_max).first;
+//    cerr<<timer.timedOut()<<endl;
 }
 
 //******************** Player derived class functions *************************

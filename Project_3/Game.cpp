@@ -83,6 +83,12 @@ bool GameImpl::takeTurn()
 void GameImpl::play()
 {
     while(!completed(winner)){
+        if(first->isInteractive()==false && second->isInteractive()==false){
+            if(turn_count>1 && turn_count%2==0){
+                cout<<"press enter to continue";
+                cin.ignore(100,'\n');
+            }
+        }
         s.display();
         takeTurn();
     }

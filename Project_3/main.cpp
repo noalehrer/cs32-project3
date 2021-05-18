@@ -11,17 +11,71 @@
 using namespace std;
 
 int main(){
+    
+    //test cases
+    //3 x 5, 5
+    
+    //4 x 4, 3
+    
+    //5 x 3, 2
+    
+    //5 x 2, 5
+    
+    //6 x 2, 3
+    
+    //10 x 2, 2
+    
+    //10 x 1, 4
+    
+    //computer vs. computer
+    
+    //computer first
+
     HumanPlayer noa("Noa");
     SmartPlayer shanthi("Shanthi");
     BadPlayer molly("Molly");
+    Game g1(4,3,3, &shanthi, &noa);
 //    Game g1(4, 3, 3, &noa, &shanthi);
 //    Game g1(3, 2, 3, &noa, &shanthi);
 //    Game g1(3,2,3, &noa, &shanthi);
 //    Game g1(2,2,2, &noa, &shanthi);
-    Game g1(10, 2, 3, &noa, &shanthi);
+//    Game g1(10, 2, 3, &noa, &shanthi);
+//    Game g1(3,5,5, &molly, &shanthi);
+//    Game g2(4,4,3, &molly, &shanthi);
+//    Game g3(5,3,2, &molly, &shanthi);
+//    Game g4(5,2,5, &molly, &shanthi);
+//    Game g5(6,2,3, &molly, &shanthi);
+//    Game g6(10,2,2, &molly, &shanthi);
+//    Game g7(10,1,4, &molly, &shanthi);
+//
+//    Game g1(3,5,5, &shanthi, &molly);
+//    Game g2(4,4,3,&shanthi, &molly);
+//    Game g3(5,3,2,&shanthi, &molly);
+//    Game g4(5,2,5,&shanthi, &molly);;
+//    Game g5(6,2,3,&shanthi, &molly);
+//    Game g6(10,2,2,&shanthi, &molly);
+//    Game g7(10,1,4, &shanthi, &molly);
 
     cout<<endl;
     g1.play();
+//    cout<<endl;
+//    g2.play();
+//    cout<<endl;
+//    g3.play();
+//    cout<<endl;
+//    g4.play();
+//    cout<<endl;
+//    g5.play();
+//    cout<<endl;
+//    g6.play();
+//    cout<<endl;
+//    g7.play();
+//    cout<<endl;
+    cerr<<"Passed all tests"<<endl;
+
+
+
+
 }
 //void doPlayerTests()
 //    {
